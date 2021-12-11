@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // {user_id} is a wildcard representing the document id in users collection, the doc id is user's id by design
+    match /users/{user_id} {
+      allow read, create : if request.auth != null;
+      // request.auth.uid is id of user currently logged in
+      allow update: if request.auth.uid == user_id;
+    }
+    match /projects/{project_id} {
+       allow read, create, update : if request.auth != null;
+      //  resource obj represents the document itself, we can look for any of our designed attributes on resource.data
+       allow delete: if request.auth.uid == resource.data.createdBy.id;
+    }
+  }
+}
+
+//users collection
+// any authenticated user can read & create
+// only users who own/created a doc can update it (user id's match)
+
+//projects collection
+// any authenticated user can read, create, & update a doc
+// only users who own/created a doc can dlt it
